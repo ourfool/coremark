@@ -100,6 +100,7 @@ $ ./coremark.exe > run1.log
 $ make XCFLAGS="-DMULTITHREAD=4 -DUSE_PTHREAD"
 ~~~
 上のようなコマンドでは、POSIXスレッドAPIを用いて4コアで実行されるようにコンパイルがおこなわれます。
+
 注釈: リンカが自動的に`pthread`ライブラリを追加しない場合、上記のコマンドではリンクが失敗します。もし、`undefined reference`というエラーが発生したら、`core_portme.mak`を自分の環境向けに修正し（例. `linux/core_portme.mak`）、`-lpthread`を`LFLAGS_END`パラメータに追加してください。
 
 # ベンチマークの実行時パラメータ
