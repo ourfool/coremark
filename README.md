@@ -1,69 +1,84 @@
+# Coremark-jp
 
-# Introduction
+下記はCoreMarkベンチマークについての説明をSaginomiyaが邦訳したものです。正確な記述に関しては[folk元リポジトリの原文](https://github.com/eembc/coremark)をご参照ください。
 
-CoreMark's primary goals are simplicity and providing a method for testing only a processor's core features. For more information about EEMBC's comprehensive embedded benchmark suites, please see www.eembc.org.
+# イントロダクション
 
-For a more compute-intensive version of CoreMark that uses larger datasets and execution loops taken from common applications, please check out EEMBC's [CoreMark-PRO](https://www.github.com/eembc/coremark-pro) benchmark, also on GitHub.
+CoreMarkベンチマークの主な目標は、プロセッサの基本機能をシンプルにテストする方法を提供することです。EEMBCの組み込みベンチマーク全般についてのより詳しい情報は、www.eembc.orgを参照してください。
 
-# Building and Running
-	
-To build and run the benchmark, type 
+[CoreMark-PRO](https://www.github.com/eembc/coremark-pro)ベンチマークもGithub上に用意されています。これは一般的なアプリケーションから取得された比較的大きなデータセットと実行ループを利用する計算量の大きなベンチマークです。
 
-`> make`
+# ビルドとベンチマーク実行
 
-Full results are available in the files `run1.log` and `run2.log`. CoreMark result can be found in `run1.log`.
-	
-## Cross Compiling
-
-For cross compile platforms please adjust `core_portme.mak`, `core_portme.h` (and possibly `core_portme.c`) according to the specific platform used. When porting to a new platform, it is recommended to copy one of the default port folders  (e.g. `mkdir <platform> && cp linux/* <platform>`), adjust the porting files, and run:
+下記のようにコマンドをタイプすることで、ベンチマークのビルドと実行がおこなわれます。
 ~~~
-% make PORT_DIR=<platform>
+$ make
 ~~~
+結果は`run1.log`、`run2.log`として出力されます。CoreMarkのベンチマーキング結果は`run1.log`に記載されています。
 
-## Make Targets
-`run` - Default target, creates `run1.log` and `run2.log`.
-`run1.log` - Run the benchmark with performance parameters, and output to `run1.log`
-`run2.log` - Run the benchmark with validation parameters, and output to `run2.log`
-`run3.log` - Run the benchmark with profile generation parameters, and output to `run3.log`
-`compile` - compile the benchmark executable 
-`link` - link the benchmark executable
-`check` - test MD5 of sources that may not be modified
-`clean` - clean temporary files
+## クロスコンパイル
 
-### Make flag: `ITERATIONS` 
-By default, the benchmark will run between 10-100 seconds. To override, use `ITERATIONS=N`
+ホストマシンと異なるマシン向けにクロスコンパイルするためには、
+
+* `core_portme.mak`
+* `core_portme.h`
+* `core_portme.c`（場合に応じて）
+
+を編集します。新たなプラットフォームへのポーティングのためには、まずはデフォルトのフォルダを下記のようなコマンドでコピーし
 ~~~
-% make ITERATIONS=10
+$ mkdir ${特定のプラットフォーム名} && cp linux/* ${特定のプラットフォーム名}
 ~~~
-Will run the benchmark for 10 iterations. It is recommended to set a specific number of iterations in certain situations e.g.:
-
-* Running with a simulator
-* Measuring power/energy
-* Timing cannot be restarted
-
-Minimum required run time: **Results are only valid for reporting if the benchmark ran for at least 10 secs!**
-
-### Make flag: `XCFLAGS`
-To add compiler flags from the command line, use `XCFLAGS` e.g.:
-
+適切にファイルを編集したあとで、下記のように実行します。
 ~~~
-% make XCFLAGS="-g -DMULTITHREAD=4 -DUSE_FORK=1"
+$ make PORT_DIR=${特定のプラットフォーム名}
 ~~~
 
-### Make flag: `CORE_DEBUG`
+## Makeのターゲット一覧
 
-Define to compile for a debug run if you get incorrect CRC.
+`run`：デフォルトターゲット。`run1.log`と`run2.log`を生成します。
+`run1.log`：性能パラメータと共に実行。`run1.log`を生成します。
+`run2.log`：検証パラメータと共に実行。`run2.log`を生成します。
+`run3.log`：プロファイル情報と共に実行。`run3.log`を生成します。
+`compile`：ベンチマークを実行可能なかたちにコンパイルします。
+`link`：ベンチマークを実行可能なかたちにリンクします。
+`check`：MD5チェックサムを確認します。
+`clean`：一時ファイルを削除します。
 
+### Makeフラグ：`ITERATIONS`
+
+デフォルトでは、ベンチマークは実行時間が10～100秒となるような回数実行されます。これを上書きするためには、`ITERATIONS=N`として明示的に実行回数を指定します。
 ~~~
-% make XCFLAGS="-DCORE_DEBUG=1"
+$ make ITERATIONS=10
+~~~
+とすると10回実行されます。実行回数の指定は下記のような場合において推奨されます。
+
+* シミュレータ上での実行
+* 消費電力・エネルギー測定
+* 実行時間の複数回測定機構が無い場合
+
+最小実行時間について：**結果は10秒間以上実行した場合にのみ有効とみなされ提出可能です**
+
+### Makeフラグ：`XCFLAGS`
+
+フラグをコマンドラインから追加したい場合、`XCFLAGS`を使います。
+~~~
+$ make XCFLAGS="-g -DMULTITHREAD=4 -DUSE_FORK=1"
 ~~~
 
-### Make flag: `REBUILD`
+### Makeフラグ：`CORE_DEBUG`
 
-Force a rebuild of the executable.
+CRC結果が不正でデバッグを行う場合に指定します。
+~~~
+$ make XCFLAGS="-DCORE_DEBUG=1"
+~~~
 
-## Systems Without `make`
-The following files need to be compiled:
+### Makeフラグ：`REBUILD`
+
+実行ファイルを強制的にリビルドします。
+
+## Makeの無いシステムの場合
+
+下記のファイル群をコンパイルします。
 * `core_list_join.c`
 * `core_main.c`
 * `core_matrix.c`
@@ -71,104 +86,103 @@ The following files need to be compiled:
 * `core_util.c`
 * `PORT_DIR/core_portme.c`
 
-For example:
+コマンド例
 ~~~
-% gcc -O2 -o coremark.exe core_list_join.c core_main.c core_matrix.c core_state.c core_util.c simple/core_portme.c -DPERFORMANCE_RUN=1 -DITERATIONS=1000
-% ./coremark.exe > run1.log
+$ gcc -O2 -o coremark.exe core_list_join.c core_main.c core_matrix.c core_state.c core_util.c simple/core_portme.c -DPERFORMANCE_RUN=1 -DITERATIONS=1000
+$ ./coremark.exe > run1.log
 ~~~
-The above will compile the benchmark for a performance run and 1000 iterations. Output is redirected to `run1.log`.
+上の例ではベンチマークが性能調査向けに1000回実行されるようコンパイルされます。出力は、`run1.log`にリダイレクトされます。
 
-# Parallel Execution
-Use `XCFLAGS=-DMULTITHREAD=N` where N is number of threads to run in parallel. Several implementations are available to execute in multiple contexts, or you can implement your own in `core_portme.c`.
+# 並列実行
 
+並列実行のためには、`XCFLAGS=-DMULTITHREAD=N`と設定します。 ここでNは並列スレッド数です。いくつかの実装は複数コンテキストでの実行をサポートしています。独自実装を追加する場合には`core_portme.c`を編集します。
 ~~~
-% make XCFLAGS="-DMULTITHREAD=4 -DUSE_PTHREAD"
+$ make XCFLAGS="-DMULTITHREAD=4 -DUSE_PTHREAD"
 ~~~
+上のようなコマンドでは、POSIXスレッドAPIを用いて4コアで実行されるようにコンパイルがおこなわれます。
+注釈: リンカが自動的に`pthread`ライブラリを追加しない場合、上記のコマンドではリンクが失敗します。もし、`undefined reference`というエラーが発生したら、`core_portme.mak`を自分の環境向けに修正し（例. `linux/core_portme.mak`）、`-lpthread`を`LFLAGS_END`パラメータに追加してください。
 
-The above will compile the benchmark for execution on 4 cores, using POSIX Threads API.
+# ベンチマークの実行時パラメータ
 
-Note: linking may fail on the previous command if your linker does not automatically add the `pthread` library. If you encounter `undefined reference` errors, please modify the `core_portme.mak` file for your platform, (e.g. `linux/core_portme.mak`) and add `-lpthread` to the `LFLAGS_END` parameter.
+CoreMarkの実行ファイルは下記のようなパラメータをとります (ただし`main()`のみが引数をとります):
+1st - データ初期化のためのシード値。
+2nd - データ初期化のためのシード値。
+3rd - データ初期化のためのシード値。
+4th - 実行回数 (デフォルト値は0、0を指定した場合は自動的に実行回数を算出)
+5th - 内部で利用。 
+6th - 内部で利用。 
+7th - mallocを利用可能な環境のみ。入力データバッファの値を上書き。
 
-# Run Parameters for the Benchmark Executable
-CoreMark's executable takes several parameters as follows (but only if `main()` accepts arguments):
-1st - A seed value used for initialization of data.
-2nd - A seed value used for initialization of data.
-3rd - A seed value used for initialization of data.
-4th - Number of iterations (0 for auto : default value)
-5th - Reserved for internal use. 
-6th - Reserved for internal use. 
-7th - For malloc users only, ovreride the size of the input data buffer.
+makeによって実行した場合は、2つの異なるシード値で初期化されたCoremarkが実行されます。
 
-The run target from make will run coremark with 2 different data initialization seeds.
-
-## Alternative parameters: 
-If not using `malloc` or command line arguments are not supported, the buffer size
-for the algorithms must be defined via the compiler define `TOTAL_DATA_SIZE`.
-`TOTAL_DATA_SIZE` must be set to 2000 bytes (default) for standard runs.
-The default for such a target when testing different configurations could be:
+## 代替パラメータ: 
+`malloc`を利用しない場合やコマンドラインからのパラメータ指定がおこなえない場合、アルゴリズム向けのバッファサイズを`TOTAL_DATA_SIZE`を使ってコンパイラ経由で指定する必要があります。`TOTAL_DATA_SIZE`は標準的な実行においては2000 byte（デフォルト値）に指定します。異なる設定でテストをおこおこなう場合のコマンドは下記のようになります。
 
 ~~~
 % make XCFLAGS="-DTOTAL_DATA_SIZE=6000 -DMAIN_HAS_NOARGC=1"
 ~~~
 
-# Submitting Results
+# リザルト提出
 
-CoreMark results can be submitted on the web. Open a web browser and go to the [submission page](https://www.eembc.org/coremark/submit.php). After registering an account you may enter a score.
+CoremarkのリザルトはWebから提出することができます。Webブラウザを開き、[提出ページ](https://www.eembc.org/coremark/submit.php)にアクセスします。アカウント登録後にスコア投稿が可能になります。
 
-# Run Rules
-What is and is not allowed.
+# ベンチマーク実行時のルール
 
-## Required
-1. The benchmark needs to run for at least 10 seconds.
-2. All validation must succeed for seeds `0,0,0x66` and `0x3415,0x3415,0x66`, buffer size of 2000 bytes total.
-    * If not using command line arguments to main:
+実行時のルールを下記にまとめています。
+
+## 要件
+1. ベンチマークは少なくとも10秒間の実行が必要です.
+2. すべての検証はシード値`0, 0, 0x66`、`0x3415, 0x3415, 0x66`、2000 byteのバッファサイズにおいて成功する必要があります。
+    * コマンドラインでのメイン関数引数指定を利用しない場合:
 ~~~
 	% make XCFLAGS="-DPERFORMANCE_RUN=1" REBUILD=1 run1.log
 	% make XCFLAGS="-DVALIDATION_RUN=1" REBUILD=1 run2.log
 ~~~
-3. If using profile guided optimization, profile must be generated using seeds of `8,8,8`, and buffer size of 1200 bytes total.
+3. プロファイルに基づく最適化をおこなう場合、そのプロファイルはシード値`8, 8, 8`と合計1200 byteのバッファサイズとする必要があります。
 ~~~
     % make XCFLAGS="-DTOTAL_DATA_SIZE=1200 -DPROFILE_RUN=1" REBUILD=1 run3.log
 ~~~
-4. All source files must be compiled with the same flags.
-5. All data type sizes must match size in bits such that:
-	* `ee_u8` is an unsigned 8-bit datatype.
-	* `ee_s16` is a signed 16-bit datatype.
-	* `ee_u16` is an unsigned 16-bit datatype.
-	* `ee_s32` is a signed 32-bit datatype.
-	* `ee_u32` is an unsigned 32-bit datatype.
+4. すべてのソースファイルは共通のフラグでコンパイルしてください。
+5. すべてのデータ型サイズは下記のサイズと一致させてください。
+	* `ee_u8` は符号なしの8-bitデータ型です。
+	* `ee_s16` は符号付きの16-bitデータ型です。
+	* `ee_u16` は符号なしの16-bitデータ型です。
+	* `ee_s32` は符号付きの32-bitデータ型です。
+	* `ee_u32` は符号なしの32-bitデータ型です。
 
-## Allowed
+## 許可されている変更
 
-1. Changing number of iterations
-2. Changing toolchain and build/load/run options
-3. Changing method of acquiring a data memory block
-5. Changing the method of acquiring seed values
-6. Changing implementation `in core_portme.c`
-7. Changing configuration values in `core_portme.h`
-8. Changing `core_portme.mak`
+1. 実行回数の変更
+2. ツールチェーンや、ビルド・ロード・実行オプションの変更
+3. データメモリブロックを取得する方法の変更
+5. シード値を取得する方法の変更
+6. `core_portme.c`の変更
+7. `core_portme.h`内の設定パラメータの変更
+8. `core_portme.mak`の変更
 
-## NOT ALLOWED
-1. Changing of source file other then `core_portme*` (use `make check` to validate)
+## 禁止されている変更
 
-# Reporting rules
-Use the following syntax to report results on a data sheet:
+1. `core_portme*`以外のソースファイルの変更 (`make check`でこのような変更が無いか検証することができます)
+
+# 提出のルール
+
+下記のようなフォーマットでデータシートを記入し、リザルトを提出します。
 
 CoreMark 1.0 : N / C [/ P] [/ M]
 
-N - Number of iterations per second with seeds 0,0,0x66,size=2000)
+N - 1秒あたりの実行回数（シード値は0, 0, 0x66、バッファサイズは2000）
 
-C - Compiler version and flags
+C - コンパイラのバージョンとフラグ
 
-P - Parameters such as data and code allocation specifics
+P - データとコードの割り当て設定
 
-* This parameter *may* be omitted if all data was allocated on the heap in RAM.
-* This parameter *may not* be omitted when reporting CoreMark/MHz
+* すべてのデータがRAMのヒープ領域に割り当てられる場合はこのパラメータは省略できます。
+* CoreMark/MHzの報告時にはこのパラメータは省略しないでください。
 
-M - Type of parallel execution (if used) and number of contexts
-* This parameter may be omitted if parallel execution was not used.
+M - 並列実行形式とコンテキスト数
+* 並列実行がおこなわれていない場合にはこのパラメータは省略できます。
 
-e.g.:
+例:
 
 ~~~
 CoreMark 1.0 : 128 / GCC 4.1.2 -O2 -fprofile-use / Heap in TCRAM / FORK:2 
@@ -178,83 +192,83 @@ or
 CoreMark 1.0 : 1400 / GCC 3.4 -O4 
 ~~~
 
-If reporting scaling results, the results must be reported as follows:
+スケーリング結果を報告する場合、結果は下記のように報告してください。
 
 CoreMark/MHz 1.0 : N / C / P [/ M]
 
-P - When reporting scaling results, memory parameter must also indicate memory frequency:core frequency ratio.
-1. If the core has cache and cache frequency to core frequency ratio is configurable, that must also be included.
-
-e.g.:
+P - スケーリング結果を報告する場合、メモリパラメータからメモリの周波数とコアの周波数の比がわかるようにしてください。
+1. もしコアがキャッシュを持っており、キャッシュの動作周波数とコアの動作周波数が設定可能であるなら、そのことも含めて報告ください。
+例:
 
 ~~~
 CoreMark/MHz 1.0 : 1.47 / GCC 4.1.2 -O2 / DDR3(Heap) 30:1 Memory 1:1 Cache
 ~~~
 
-# Log File Format
-The log files have the following format
+# ログファイルフォーマット
+
+ログファイルは下記のようなフォーマットになっています。
 
 ~~~
-2K performance run parameters for coremark.	(Run type)
-CoreMark Size    	: 666					(Buffer size)
-Total ticks			: 25875					(platform dependent value)
-Total time (secs) 	: 25.875000				(actual time in seconds)
-Iterations/Sec 		: 3864.734300			(Performance value to report)
-Iterations			: 100000				(number of iterations used)
-Compiler version	: GCC3.4.4				(Compiler and version)	
-Compiler flags		: -O2					(Compiler and linker flags)
+2K performance run parameters for coremark.	(実行タイプ)
+CoreMark Size    	: 666					(バッファサイズ)
+Total ticks			: 25875					(実行環境依存の値)
+Total time (secs) 	: 25.875000				(実行時間)
+Iterations/Sec 		: 3864.734300			(報告に用いる性能値)
+Iterations			: 100000				(実行回数)
+Compiler version	: GCC3.4.4				(コンパイラとバージョン)	
+Compiler flags		: -O2					(コンパイラとリンカのフラグ)
 Memory location		: Code in flash, data in on chip RAM
-seedcrc				: 0xe9f5				(identifier for the input seeds)
-[0]crclist			: 0xe714				(validation for list part)
-[0]crcmatrix		: 0x1fd7				(validation for matrix part)
-[0]crcstate			: 0x8e3a				(validation for state part)
-[0]crcfinal			: 0x33ff				(iteration dependent output)
-Correct operation validated. See README.md for run and reporting rules.  (*Only when run is successful*)
-CoreMark 1.0 : 6508.490622 / GCC3.4.4 -O2 / Heap 						  (*Only on a successful performance run*)
+seedcrc				: 0xe9f5				(入力シード値の識別子)
+[0]crclist			: 0xe714				(連結リスト演算部の検証)
+[0]crcmatrix		: 0x1fd7				(行列演算部の検証)
+[0]crcstate			: 0x8e3a				(ステートマシン演算部の検証)
+[0]crcfinal			: 0x33ff				(実行回数依存の出力)
+Correct operation validated. See README.md for run and reporting rules.  (*実行成功時のみ表示*)
+CoreMark 1.0 : 6508.490622 / GCC3.4.4 -O2 / Heap 						  (*実行成功時のみ表示*)
 ~~~
 
-# Theory of Operation
+# 動作原理
 
-This section describes the initial goals of CoreMark and their implementation.
+ここではCoremarkの目指すところとその実装とについて述べます。
 
-## Small and easy to understand
+## 容易に理解可能
 
-* X number of source code lines for timed portion of the benchmark.
-* Meaningful names for variables and functions.
-* Comments for each block of code more than 10 lines long.
+* 少ないコード行数
+* 意味を理解しやすい変数や関数の命名
+* コードの各ブロック毎に10行以上のコメントを付与
 
-## Portability
+## ポータビリティ
 
-A thin abstraction layer will be provided for I/O and timing in a separate file. All I/O and timing of the benchmark will be done through this layer.
+I/Oやタイミングの違いに対応するための薄い抽象化レイヤが提供されています。I/Oやタイミングに関連するすべてのことがこのレイヤを介して処理されます。
 
-### Code / data size
+### コード/データサイズ
 
-* Compile with gcc on x86 and make sure all sizes are according to requirements. 
-* If dynamic memory allocation is used, take total memory allocated into account as well. 
-* Avoid recursive functions and keep track of stack usage.
-* Use the same memory block as data site for all algorithms, and initialize the data before each algorithm – while this means that initialization with data happens during the timed portion, it will only happen once during the timed portion and so have negligible effect on the results.
+* x86マシン上のgccでコンパイルをおこない、すべてのサイズが要求を満たしていることを検証済。
+* 動的なメモリ割り当てを使用している場合は、割り当てられたメモリの合計についても考慮。
+* 再帰的な関数を避け、スタックの使用状況を把握。
+* すべてのアルゴリズムでデータ参照元として同じメモリブロックを使用し、各アルゴリズムの前にデータを初期化しています。これにより、データの初期化は制限時間内に行われることになりますが、1回しか行われないため、結果へ与える影響はごくわずかです。
 
-## Controlled output
+## 制御された出力
 
-This may be the most difficult goal. Compilers are constantly improving and getting better at analyzing code. To create work that cannot be computed at compile time and must be computed at run time, we will rely on two assumptions:
+これは最も困難な目標かもしれません。コンパイラは常に改良を重ね、コードの解析能力を高めています。コンパイル時には計算できず、実行時に計算しなければならない仕事を作るためには、下記のような2つの仮定に頼ることになります。
 
-* Some system functions (e.g. time, scanf) and parameters cannot be computed at compile time.  In most cases, marking a variable volatile means the compiler is force to read this variable every time it is read. This will be used to introduce a factor into the input that cannot be precomputed at compile time. Since the results are input dependent, that will make sure that computation has to happen at run time.
+* システム関数（time、scanfなど）やパラメータの中には、コンパイル時に計算できないものがあります。 ほとんどの場合、変数をvolatileにすることは、コンパイラがこの変数の値を読もうとするたびに強制的に読ませることを意味します。これは、コンパイル時に事前計算できない要素を入力値に入れ込むために使用されます。結果は入力に依存しているので、実行時に計算が必要になることがわかります。
 
-* Either a system function or I/O (e.g. scanf) or command line parameters or volatile variables will be used before the timed portion to generate data which is not available at compile time. Specific method used is not relevant as long as it can be controlled, and that it cannot be computed or eliminated by the compiler at compile time. E.g. if the clock() functions is a compiler stub, it may not be used. The derived values will be reported on the output so that verification can be done on a different machine. 
+* システム関数、I/O（scanfなど）、コマンドラインパラメータ、volatile変数のいずれかが制限時間部分の前で使用され、コンパイル時には得ることのできないデータを生成します。制御可能であり、コンパイラがコンパイル時に計算したり、除去したりできないものであればどんな方法でも問題ありませんが、例えば、clock()関数がコンパイラのスタブである場合は使用できません。値は出力としてレポートされるので、異なるマシン上でも検証が可能です。
 
-* We cannot rely on command line parameters since some embedded systems do not have the capability to provide command line parameters. All 3 methods above will be implemented (time based, scanf and command line parameters) and all 3 are valid if the compiler cannot determine the value at compile time. 
+* 組込みシステムの中には、コマンドラインパラメータを提供する機能を持たないものがあるため、コマンドラインパラメータに頼ることはできません。上記の3つの方法（時間ベース、scanf、コマンドラインパラメータ）はすべて実装され、コンパイラがコンパイル時に値を決定できない場合には3つとも有効です。
 
-* It is important to note that The actual values that are to be supplied at run time will be standardized. The methodology is not intended to provide random data, but simply to provide controlled data that cannot be precomputed at compile time.
+* 実行時に供給される実際の値は標準化されていることに注意してください。上記はランダムなデータを提供するために利用されるものではなく、単にコンパイル時に事前計算できない制御されたデータを提供することが目的です。
 
-* Printed results must be valid at run time. This will be used to make sure the computation has been executed.
+* 表示される結果は、実行中に有効でなければなりません。これは、計算が実行されたことを確認するために使用されます。
 
-* Some embedded systems do not provide “printf” or other I/O functionality. All I/O will be done through a thin abstraction interface to allow execution on such systems (e.g. allow output via JTAG).
+* 組込みシステムの中には「printf」などのI/O機能を提供していないものがあります。すべての入出力は薄い抽象化インターフェースを介して行われ、そうしたシステム上での実行を可能にします（例えば、JTAG経由で出力を行うなど）。
 
-## Key Algorithms
+## 重要なアルゴリズム
 
-### Linked List
+### 連結リスト
 
-The following linked list structure will be used:
+下記のようなリンク構造が利用されます。
 
 ~~~
 typedef struct list_data_s {
@@ -268,61 +282,61 @@ typedef struct list_head_s {
 } list_head;
 ~~~
 
-While adding a level of indirection accessing the data, this structure is realistic and used in many embedded applications for small to medium lists.
+この構造は、データへのアクセスに間接性を持たせつつ、現実的であり、小～中規模のリストを扱う多くの組み込みアプリケーションで使用されています。
 
-The list itself will be initialized on a block of memory that will be passed in to the initialization function. While in general linked lists use malloc for new nodes, embedded applications sometime control the memory for small data structures such as arrays and lists directly to avoid the overhead of system calls, so this approach is realistic.
+リスト自体は、初期化関数に渡されたメモリブロックで初期化されます。一般的には連結リストは新たなノードのためにmallocを使用しますが、組み込みアプリケーションではシステムコールのオーバーヘッドを避けるために配列やリストなどの小さなデータ構造のメモリを直接制御することがあり、このアプローチが現実的になります。
 
-The linked list will be initialized such that 1/4 of the list pointers point to sequential areas in memory, and 3/4 of the list pointers are distributed in a non sequential manner. This is done to emulate a linked list that had add/remove happen for a while disrupting the neat order, and then a series of adds that are likely to come from sequential memory locations.
+連結リストは、リストポインタの1/4がメモリ上のシーケンシャルな領域を指し、3/4がノンシーケンシャルに散らばるように初期化されます。これは、しばらくの間add/removeが起こって順序が乱され、その後、順次メモリの場所から追加が行われるような状態をエミュレートするためです。
 
-For the benchmark itself:
-- Multiple find operations are going to be performed. These find operations may result in the whole list being traversed. The result of each find will become part of the output chain.
-- The list will be sorted using merge sort based on the data16 value, and then derive CRC of the data16 item in order for part of the list. The CRC will become part of the output chain.
-- The list will be sorted again using merge sort based on the idx value. This sort will guarantee that the list is returned to the primary state before leaving the function, so that multiple iterations of the function will have the same result. CRC of the data16 for part of the list will again be calculated and become part of the output chain.
+ベンチマーク自体について:
+- 複数の検索操作が行われます。これらの検索操作により、リスト全体を横断することがあります。各検索の結果は、出力の一部となります。
+- リストは、data16の値に基づいてマージソートを使用してソートされ、リストの一部に対してdata16のCRCを順に導きます。このCRCが出力の一部となります。
+- リストは、idxの値に基づいてマージソートで再度ソートされます。このソートにより、関数を終了する前にリストが最初の状態へと戻されることが保証され、関数を複数回繰り返しても同じ結果が得られます。リストの一部に対するdata16のCRCが再び計算され、出力の一部となります。
 
-The actual `data16` in each cell will be pseudo random based on a single 16b input that cannot be determined at compile time. In addition, the part of the list which is used for CRC will also be passed to the function, and determined based on an input that cannot be determined at run time.
+各セルの実際の`data16`は，コンパイル時には決定できない単一の16-bitの入力に基づく擬似ランダムな値です。また、CRCに使用されるリストの一部分も関数に渡され，実行時には決定できない入力に基づいて決定されます。
 
-### Matrix Multiply
+### 行列乗算
 
-This very simple algorithm forms the basis of many more complex algorithms. The tight inner loop is the focus of many optimizations (compiler as well as hardware based) and is thus relevant for embedded processing. 
+ここに示す非常にシンプルなアルゴリズムが、多くのより複雑なアルゴリズムの基礎になっています。タイトな内部ループは、多くの（コンパイラおよびハードウェアベースの）最適化の焦点となっており、したがって、組み込み処理にも関連しています。
 
-The total available data space will be divided to 3 parts:
-1. NxN matrix A.
-2. NxN matrix B.
-3. NxN matrix C.
+利用可能なデータ空間は下記の3つに分類されます。
+1. NxNの行列A
+2. NxNの行列B
+3. NxNの行列C
 
-E.g. for 2K we will have 3 12x12 matrices (assuming data type of 32b 12(len)*12(wid)*4(size)*3(num) =1728 bytes). 
+例. 2K byteの場合は3つの12x12行列（32-bitのデータ型を想定すると、12(len)*12(wid)*4(size)*3(num) =1728 bytes）
 
-Matrix A will be initialized with small values (upper 3/4 of the bits all zero).
-Matrix B will be initialized with medium values (upper half of the bits all zero).
-Matrix C will be used for the result.
+行列Aは、小さな値（上位3/4のビットがすべて0）で初期化されます。
+行列Bは、中程度の値（上位半分のビットがすべて0）で初期化されます。
+行列Cは、結果に使用されます。
 
-For the benchmark itself:
-- Multiple A by a constant into C, add the upper bits of each of the values in the result matrix. The result will become part of the output chain.
-- Multiple A by column X of B into C, add the upper bits of each of the values in the result matrix. The result will become part of the output chain.
-- Multiple A by B into C, add the upper bits of each of the values in the result matrix. The result will become part of the output chain.
+ベンチマーク自体について:
+- Aを定数倍してCに入力し、結果行列の各値の上位ビットを加算します。その結果が出力の一部となります。
+- AにBのX列を乗じたものをCに入力し、結果行列の各値の上位ビットを加算します。その結果が出力の一部となります。
+- AにBを乗じたものをCに入力し、結果行列の各値の上位ビットを加算します。その結果が出力の一部となります。
 
-The actual values for A and B must be derived based on input that is not available at compile time.
+AとBの実際の値は、コンパイル時には得られない入力に基づいて決める必要があります。
 
-### State Machine
+### ステートマシン
 
-This part of the code needs to exercise switch and if statements. As such, we will use a small Moore state machine. In particular, this will be a state machine that identifies string input as numbers and divides them according to format.
+この部分ではswitch文やif文を行使する必要があります。ここでは、小さなムーア型ステートマシンを使います。具体的には、文字列の入力を数字として認識し、形式に応じて分割するステートマシンとします。
 
-The state machine will parse the input string until either a “,” separator or end of input is encountered. An invalid number will cause the state machine to return invalid state and a valid number will cause the state machine to return with type of number format (int/float/scientific).
+ステートマシンは、「,」セパレータか入力の終わりに遭遇するまで、入力文字列を解析します。無効な数値が入力された場合は、ステートマシンは無効な状態を返し、有効な数値が入力された場合は、ステートマシンは数値の形式（int/float/scientific）を返します。
 
-This code will perform a realistic task, be small enough to easily understand, and exercise the required functionality. The other option used in embedded systems is a mealy based state machine, which is driven by a table. The table then determines the number of states and complexity of transitions. This approach, however, tests mainly the load/store and function call mechanisms and less the handling of branches. If analysis of the final results shows that the load/store functionality of the processor is not exercised thoroughly, it may be a good addition to the benchmark (codesize allowing).
+このコードは、現実的なタスクを実行し、十分小さく理解し易く、必要な機能を行使しています。組込みシステムで使われるもう一つの選択肢はミーリ型ステートマシンで、これはテーブルによって駆動されています。テーブルは、状態の数と遷移の複雑さを決定します。しかし、この方法では、主にロード/ストアや関数呼び出しのメカニズムがテストされ、分岐の処理はそれほど行われません。最終的な結果を分析した結果、プロセッサのロード/ストア機能が十分に行使されていないことが判明した場合には、ベンチマークに追加するのが良いでしょう（コードサイズが許す限り）。
 
-For input, the memory block will be initialized with comma separated values of mixed formats, as well as invalid inputs.
+入力として、形式が混在するコンマ区切りの値や、無効な入力でメモリブロックが初期化されます。
 
-For the benchmark itself:
-- Invoke the state machine on all of the input and count final states and state transitions. CRC of all final states and transitions will become part of the output chain.
-- Modify the input at intervals (inject errors) and repeat the state machine operation.
-- Modify the input back to original form.
+ベンチマーク自体について:
+- すべての入力に対してステートマシンを起動し、最終的な状態と状態遷移をカウントする。すべての最終状態と遷移のCRCが出力の一部となります。
+- 間隔を置いて入力を修正し（エラーを混入させる）、ステートマシン操作を繰り返す。
+- 入力を元の形に修正する。
 
-The actual input must be initialized based on data that cannot be determined at compile time. In addition the intervals for modification of the input and the actual modification must be based on input that cannot be determined at compile time.
+実際の入力は、コンパイル時には決定できないデータに基づいて初期化されなければなりません。また、入力を修正する間隔と実際の修正とについても、コンパイル時には決定できない入力に基づいて行われなければなりません。
 
-# Validation
+# 検証
 
-This release was tested on the following platforms:
+本リリースは下記のプラットフォームでテストされています。
 * x86 cygwin and gcc 3.4 (Quad, dual and single core systems)
 * x86 linux (Ubuntu/Fedora) and gcc (4.2/4.1) (Quad and single core systems)
 * MIPS64 BE linux and gcc 3.4 16 cores system
@@ -335,15 +349,15 @@ This release was tested on the following platforms:
 * NEC 78K with IAR v4.61
 * ARM simulator with armcc v4
 
-# Memory Analysis
+# メモリ解析
 
-Valgrind 3.4.0 used and no errors reported.
+Valgrind 3.4.0 を用いてエラーの無いことを検証済み。
 	
-# Balance Analysis
+# バランス解析
 
-Number of instructions executed for each function tested with cachegrind and found balanced with gcc and -O0.
+各関数で実行される命令数については、ValgrindのCachegrindを利用して検証しgccのO0条件下でバランスしていることが示されています。
 
-# Statistics
+# 統計情報
 
 Lines:
 ~~~
@@ -360,7 +374,7 @@ Lines  Blank  Cmnts  Source     AESL
   235     30    104    104       260.0  linux/core_portme.h  (C)
   528     45    178    316       790.0  ----- Porting -----  (2 files)
  
-* For comparison, here are the stats for Dhrystone
+* 参考: Dhrystoneの場合
 Lines  Blank  Cmnts  Source     AESL     
 =====  =====  =====  =====  ==========  =======================================
   311     15    242     54       135.0  dhry.h  (C)
@@ -369,7 +383,7 @@ Lines  Blank  Cmnts  Source     AESL
  1286    173    429    714      1785.0  ----- C -----  (3 files)
 ~~~
 
-# Credits
+# クレジット
 Many thanks to all of the individuals who helped with the development or testing of CoreMark including (Sorted by company name; note that company names may no longer be accurate as this was written in 2009).
 * Alan Anderson, ADI
 * Adhikary Rajiv, ADI
@@ -389,8 +403,8 @@ Many thanks to all of the individuals who helped with the development or testing
 * Rob Cosaro, NXP
 * Shumpei Kawasaki, RENESAS
 
-# Legal
-Please refer to LICENSE.md in this reposity for a description of your rights to use this code.
+# 権利関係
+本コードの権利関係についてはリポジトリ内のLICENSE.mdを参照してください。
 
 # Copyright
 Copyright © 2009 EEMBC All rights reserved. 
